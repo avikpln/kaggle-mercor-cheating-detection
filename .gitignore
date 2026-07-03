@@ -1,0 +1,14 @@
+/data/
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+.ipynb_checkpoints/
+
+test-fi.csv
+train-fi.csv
+
+Overview.txt
+
+/submission/
