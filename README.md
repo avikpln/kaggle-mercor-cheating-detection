@@ -28,6 +28,17 @@ values, and using the social graph and the semi-supervised structure
 while tuning decision thresholds directly against the official Kaggle
 evaluation cost metric.
 
+## Data
+
+Download the competition data with:
+
+```bash
+kaggle competitions download -c mercor-cheating-detection
+```
+
+For details on the data fields, format, and structure, see the
+[competition data page on Kaggle](https://www.kaggle.com/competitions/mercor-cheating-detection/data).
+
 ## Submission (v0 Baseline)
 
 - **Score:** `-1,863,965.00000`
@@ -38,10 +49,11 @@ evaluation cost metric.
 
 ```
 kaggle-mercor-cheating-detection/
+├── docs/
+│   ├── Data.pdf            # Official competition data reference
+│   └── Overview.pdf        # Official competition brief
 ├── .gitignore
 ├── LICENSE
-├── Overview.pdf
-├── PROJECT_LOG.md
 └── README.md
 ```
 
