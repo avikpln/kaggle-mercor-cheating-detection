@@ -53,15 +53,7 @@ Progress notes and decisions are tracked in [`PROJECT_LOG.md`](PROJECT_LOG.md).
 
 ```
 kaggle-mercor-cheating-detection/
-├── code/                     # Source code
-│   ├── fimpute/              # Feature imputation
-│   ├── label/                # Label generation
-│   ├── cheating-detection-eval.ipynb
-│   └── detect.py
-├── eda/                      # Exploratory data analysis
-├── submission/               # Competition deliverables
 ├── LICENSE
-├── my-summary.docx
 ├── Overview.pdf
 ├── PROJECT_LOG.md
 └── README.md

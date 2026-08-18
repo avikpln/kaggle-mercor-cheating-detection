@@ -6,9 +6,4 @@ __pycache__/
 
 .ipynb_checkpoints/
 
-test-fi.csv
-train-fi.csv
-
-Overview.txt
-
-/submission/
+v0-baseline/
