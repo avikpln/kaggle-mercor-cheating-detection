@@ -1,11 +1,11 @@
-/data/
-
 __pycache__/
 *.py[cod]
 *$py.class
 
 .ipynb_checkpoints/
 
-v0-baseline/
+/v0-baseline/
 
-attic/
+/attic/
+
+/data/
