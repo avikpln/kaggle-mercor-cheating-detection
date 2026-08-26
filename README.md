@@ -28,6 +28,15 @@ values, and using the social graph and the semi-supervised structure
 while tuning decision thresholds directly against the official Kaggle
 evaluation cost metric.
 
+## Roadmap
+
+- [x] **EDA** — data structure, feature relationships, missingness, sampling
+bias, social graph analysis
+- [ ] **Design** — modeling approach, imputation strategy, graph usage,
+cost-aware threshold optimization
+- [ ] **Implementation** — build and validate models against the actual cost
+metric
+
 ## Data
 
 Download the competition data with:
@@ -52,7 +61,8 @@ kaggle-mercor-cheating-detection/
 ├── docs/
 │   ├── Data.pdf            # Official competition data reference
 │   └── Overview.pdf        # Official competition brief
-├── eda/                    # Exploratory data analysis work
+├── notebooks/
+│   └── eda.ipynb           # Exploratory data analysis
 ├── .gitignore
 ├── LICENSE
 └── README.md
