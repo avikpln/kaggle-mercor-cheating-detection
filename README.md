@@ -52,7 +52,8 @@ kaggle-mercor-cheating-detection/
 ├── docs/
 │   ├── Data.pdf            # Official competition data reference
 │   └── Overview.pdf        # Official competition brief
-├── eda/                    # Exploratory data analysis work
+├── notebooks/
+│   └── eda.ipynb           # Exploratory data analysis
 ├── .gitignore
 ├── LICENSE
 └── README.md
