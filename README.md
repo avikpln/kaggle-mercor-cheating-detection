@@ -62,6 +62,7 @@ kaggle-mercor-cheating-detection/
 │   ├── Data.pdf            # Official competition data reference
 │   └── Overview.pdf        # Official competition brief
 ├── notebooks/
+│   ├── design.ipynb        # Modeling design decisions
 │   └── eda.ipynb           # Exploratory data analysis
 ├── .gitignore
 ├── LICENSE
