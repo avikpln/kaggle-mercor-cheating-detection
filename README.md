@@ -32,7 +32,7 @@ evaluation cost metric.
 
 - [x] **EDA** — data structure, feature relationships, missingness, sampling
 bias, social graph analysis
-- [ ] **Design** — modeling approach, imputation strategy, graph usage,
+- [x] **Design** — modeling approach, imputation strategy, graph usage,
 cost-aware threshold optimization
 - [ ] **Implementation** — build and validate models against the actual cost
 metric
