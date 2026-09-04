@@ -40,39 +40,6 @@ data_train = data_train.drop(columns=["feature_014", "high_conf_clean"])
 # Load social graph data from a CSV file.
 social_graph = load_social_graph()
 
-# -- Cross-Validation --
-
-class LabeledStratifiedKFold:
-    def __init__(self, n_splits, *, shuffle=False, random_state=None):
-        if not shuffle and random_state is not None:
-            raise ValueError("random_state has no effect when shuffle=False.")
-        self.n_splits = n_splits
-        self.shuffle = shuffle
-        self.random_state = random_state
-
-    def split(self, X, y, groups=None):
-        positions = np.arange(len(X))
-        if self.shuffle:
-            rng = np.random.RandomState(self.random_state)
-            positions = rng.permutation(positions)
-
-        y_values = np.asarray(y)[positions]
-        positive_positions = positions[y_values == 1]
-        negative_positions = positions[y_values == 0]
-
-        positive_folds = np.array_split(positive_positions, self.n_splits)
-        negative_folds = np.array_split(negative_positions, self.n_splits)
-
-        for i in range(self.n_splits):
-            test_positions = np.concatenate(
-                [positive_folds[i], negative_folds[i]]
-            )
-            train_positions = np.setdiff1d(positions, test_positions)
-            yield train_positions, test_positions
-
-    def get_n_splits(self, X=None, y=None, groups=None):
-        return self.n_splits
-
 # -- Feature Imputation --
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
@@ -248,6 +215,37 @@ pipeline = Pipeline([
 # -- Training and Evaluation --
 from sklearn.metrics import make_scorer
 from sklearn.model_selection import cross_val_score
+
+class LabeledStratifiedKFold:
+    def __init__(self, n_splits, *, shuffle=False, random_state=None):
+        if not shuffle and random_state is not None:
+            raise ValueError("random_state has no effect when shuffle=False.")
+        self.n_splits = n_splits
+        self.shuffle = shuffle
+        self.random_state = random_state
+
+    def split(self, X, y, groups=None):
+        positions = np.arange(len(X))
+        if self.shuffle:
+            rng = np.random.RandomState(self.random_state)
+            positions = rng.permutation(positions)
+
+        y_values = np.asarray(y)[positions]
+        positive_positions = positions[y_values == 1]
+        negative_positions = positions[y_values == 0]
+
+        positive_folds = np.array_split(positive_positions, self.n_splits)
+        negative_folds = np.array_split(negative_positions, self.n_splits)
+
+        for i in range(self.n_splits):
+            test_positions = np.concatenate(
+                [positive_folds[i], negative_folds[i]]
+            )
+            train_positions = np.setdiff1d(positions, test_positions)
+            yield train_positions, test_positions
+
+    def get_n_splits(self, X=None, y=None, groups=None):
+        return self.n_splits
 
 def cost(y_true, y_pred_proba):
     # Exact minimum cost via closed-form optimal threshold search.
