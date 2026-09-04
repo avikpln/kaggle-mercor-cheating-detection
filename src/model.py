@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 
 from data import load_train_data, load_social_graph
+from imputation import get_imputer
 
 # -- Constants --
 
@@ -41,11 +42,7 @@ data_train = data_train.drop(columns=["feature_014", "high_conf_clean"])
 social_graph = load_social_graph()
 
 # -- Feature Imputation --
-from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import IterativeImputer
-
-imputer = IterativeImputer(random_state=RANDOM_STATE)
-imputer.set_output(transform="pandas")
+imputer = get_imputer(RANDOM_STATE)
 
 # -- Preprocessing --
 from sklearn.preprocessing import FunctionTransformer
