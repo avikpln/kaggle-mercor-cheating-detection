@@ -36,6 +36,10 @@ bias, social graph analysis
 cost-aware threshold optimization
 - [ ] **Implementation** — build and validate models against the actual cost
 metric
+  - [x] End-to-end baseline pipeline (impute → propagate → classify)
+  - [ ] Hyperparameter tuning (classifier, resolver choice)
+  - [ ] Compare resolver strategies (drop vs. self-training)
+  - [ ] Final model selection and submission
 
 ## Data
 
@@ -62,8 +66,12 @@ kaggle-mercor-cheating-detection/
 │   ├── Data.pdf            # Official competition data reference
 │   └── Overview.pdf        # Official competition brief
 ├── notebooks/
-│   ├── design.ipynb        # Modeling design decisions
-│   └── eda.ipynb           # Exploratory data analysis
+│   ├── cheating-detection-eval.ipynb  # Official evaluation metric
+│   ├── design.ipynb                   # Modeling design decisions
+│   └── eda.ipynb                      # Exploratory data analysis
+├── src/
+│   ├── __init__.py
+│   └── model.py            # Pipeline: imputation, propagation, classification
 ├── .gitignore
 ├── LICENSE
 └── README.md
