@@ -42,7 +42,7 @@ data_train = data_train.drop(columns=["feature_014", "high_conf_clean"])
 social_graph = load_social_graph()
 
 # -- Feature Imputation --
-imputer = get_imputer(RANDOM_STATE)
+imputer = get_imputer(random_state=RANDOM_STATE)
 
 # -- Preprocessing --
 preprocessor = FunctionTransformer()
