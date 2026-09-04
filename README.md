@@ -63,15 +63,16 @@ For details on the data fields, format, and structure, see the
 ```
 kaggle-mercor-cheating-detection/
 ├── docs/
-│   ├── Data.pdf            # Official competition data reference
-│   └── Overview.pdf        # Official competition brief
+│   ├── Data.pdf                       # Official competition data reference
+│   └── Overview.pdf                   # Official competition brief
 ├── notebooks/
 │   ├── cheating-detection-eval.ipynb  # Official evaluation metric
 │   ├── design.ipynb                   # Modeling design decisions
 │   └── eda.ipynb                      # Exploratory data analysis
 ├── src/
 │   ├── __init__.py
-│   └── model.py            # Pipeline: imputation, propagation, classification
+│   ├── data.py                        # Data loading
+│   └── model.py                       # Main ML pipeline
 ├── .gitignore
 ├── LICENSE
 └── README.md

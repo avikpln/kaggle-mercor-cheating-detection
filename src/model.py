@@ -2,6 +2,8 @@
 import pandas as pd
 import numpy as np
 
+from data import load_train_data, load_social_graph
+
 # -- Constants --
 
 # Set random state for reproducibility.
@@ -22,20 +24,21 @@ DEBUG_MAX_ITER = 1000
 # -- Data Preparation --
 
 # Load the training data from a CSV file.
-data = pd.read_csv("data/train.csv").set_index("user_hash")
+data_train = load_train_data().set_index("user_hash")
 
 # Shuffle the training data.
-data = data.sample(frac=1.0, random_state=RANDOM_STATE)
+data_train = data_train.sample(frac=1.0, random_state=RANDOM_STATE)
 
 # Separate the target variable from the training data.
 target_name = "is_cheating"
-data_train, target_train = data.drop(columns=[target_name]), data[target_name]
+target_train = data_train[target_name]
+data_train = data_train.drop(columns=[target_name])
 
 # Feature selection.
 data_train = data_train.drop(columns=["feature_014", "high_conf_clean"])
 
 # Load social graph data from a CSV file.
-social_graph = pd.read_csv("data/social_graph.csv")
+social_graph = load_social_graph()
 
 # -- Cross-Validation --
 
