@@ -3,16 +3,16 @@ import pandas as pd
 import numpy as np
 
 import networkx as nx
-from sklearn.base import BaseEstimator, ClassifierMixin, clone
+from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.metrics import make_scorer
 from sklearn.model_selection import cross_val_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
-from sklearn.semi_supervised import LabelPropagation
 
 from data import load_train_data, load_social_graph
 from imputation import get_imputer
+from pseudo_labeling import get_labeler
 
 # -- Constants --
 
@@ -21,15 +21,6 @@ RANDOM_STATE = 42
 
 # Number of cross-validation folds.
 N_SPLITS = 5
-
-# Flag to enable debug mode.
-DEBUG = False
-
-# Number of qualifying connected components to sample in debug mode.
-DEBUG_N_COMPONENTS = 100
-
-# Max iterations for label propagation in debug mode.
-DEBUG_MAX_ITER = 1000
 
 # -- Data Preparation --
 
@@ -56,114 +47,14 @@ imputer = get_imputer(RANDOM_STATE)
 # -- Preprocessing --
 preprocessor = FunctionTransformer()
 
-# -- Label Propagation --
-class GraphLabelFiller:
-
-    def __init__(self, graph, resolver=None):
-        self.graph = graph
-        self.resolver = resolver
-
-    def fit_transform(self, X, y):
-        # Calculate connected components.
-        components = list(nx.connected_components(self.graph))
-
-        # Get the user_hash values of labeled train users.
-        y_labeled = set(y.dropna().index)
-
-        # Keep components with at least one labeled train user.
-        qualifying_components = [
-            component for component in components
-            if component & y_labeled
-        ]
-
-        if DEBUG:
-            rng = np.random.RandomState(RANDOM_STATE)
-            qualifying_components = rng.choice(
-                qualifying_components,
-                size=DEBUG_N_COMPONENTS,
-                replace=False,
-            ).tolist()
-
-        # Retain only the nodes in the qualifying components.
-        keep_nodes = set().union(*qualifying_components)
-        graph = self.graph.subgraph(keep_nodes).copy()
-
-        # Order nodes: qualifying train users first, then the rest.
-        users_in_qualifying = set(X.index) & set(graph.nodes)
-
-        # Sort for reproducibility.
-        nodelist = (
-            sorted(users_in_qualifying)
-            + sorted(set(graph.nodes) - users_in_qualifying)
-        )
-
-        # Create the adjacency matrix for the qualifying graph.
-        adjacency_matrix = nx.to_scipy_sparse_array(graph, nodelist=nodelist)
-
-        # Build the label array aligned to nodelist, using -1 for unlabeled.
-        graph_y = y.reindex(nodelist).fillna(-1).to_numpy()
-
-        # Run label propagation using the precomputed adjacency
-        # matrix as the kernel.
-        kernel = lambda *args: adjacency_matrix
-        max_iter = 10000
-        if DEBUG:
-            max_iter = DEBUG_MAX_ITER
-        label_propagator = LabelPropagation(kernel=kernel, max_iter=max_iter)
-        label_propagator.fit(adjacency_matrix, graph_y)
-
-        # Recover propagated labels, aligned to nodelist.
-        propagated_labels = pd.Series(
-            label_propagator.transduction_, index=nodelist
-        )
-
-        # Fill unlabeled train users with their propagated labels.
-        propagated_labels = propagated_labels.reindex(X.index)
-        y = y.fillna(propagated_labels)
-
-        # Resolve remaining unlabeled users.
-        if self.resolver is None:
-            X, y = X[y.notna()], y[y.notna()]
-        else:
-            X, y = self.resolver.process(X, y)
-
-        return X, y
-
-# Populate graph.
+# -- Pseudo-Labeling --
 graph = nx.from_pandas_edgelist(
     social_graph,
     source="user_a",
     target="user_b",
 )
 
-# -- Resolution --
-class EstimatorBasedResolver:
-
-    def __init__(self, estimator):
-        self.estimator = estimator
-
-    def process(self, X, y):
-        # Identify labeled and unlabeled samples.
-        labeled = y.notna()
-        unlabeled = y.isna()
-
-        # Fit a clone of the estimator on the labeled samples.
-        estimator = clone(self.estimator)
-        estimator.fit(X[labeled], y[labeled])
-
-        # Resolve the remaining labels using the fitted estimator.
-        y = y.copy()
-        y.loc[unlabeled] = estimator.predict(X[unlabeled])
-
-        return X, y
-
-resolution_estimator = HistGradientBoostingClassifier(
-    random_state=RANDOM_STATE
-)
-resolver = EstimatorBasedResolver(resolution_estimator)
-
-# Create an instance of the GraphLabelFiller class.
-label_filler = GraphLabelFiller(graph, resolver)
+labeler = get_labeler(graph, random_state=RANDOM_STATE)
 
 # -- Classification --
 classifier = HistGradientBoostingClassifier(
@@ -181,12 +72,12 @@ classifier = HistGradientBoostingClassifier(
 # -- Semi-Supervised Learning --
 class SemiSupervisedClassifier(BaseEstimator, ClassifierMixin):
 
-    def __init__(self, classifier, label_filler):
+    def __init__(self, classifier, labeler):
         self.classifier = classifier
-        self.label_filler = label_filler
+        self.labeler = labeler
 
     def fit(self, X, y):
-        X_filled, y_filled = self.label_filler.fit_transform(X, y)
+        X_filled, y_filled = self.labeler.fit_transform(X, y)
         self.classifier.fit(X_filled, y_filled)
         self.classes_ = self.classifier.classes_
         return self
@@ -197,7 +88,7 @@ class SemiSupervisedClassifier(BaseEstimator, ClassifierMixin):
     def predict_proba(self, X):
         return self.classifier.predict_proba(X)
 
-estimator = SemiSupervisedClassifier(classifier, label_filler)
+estimator = SemiSupervisedClassifier(classifier, labeler)
 
 # -- Pipeline --
 pipeline = Pipeline([
