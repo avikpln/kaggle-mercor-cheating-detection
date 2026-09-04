@@ -2,6 +2,15 @@
 import pandas as pd
 import numpy as np
 
+import networkx as nx
+from sklearn.base import BaseEstimator, ClassifierMixin, clone
+from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.metrics import make_scorer
+from sklearn.model_selection import cross_val_score
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer
+from sklearn.semi_supervised import LabelPropagation
+
 from data import load_train_data, load_social_graph
 from imputation import get_imputer
 
@@ -45,14 +54,9 @@ social_graph = load_social_graph()
 imputer = get_imputer(RANDOM_STATE)
 
 # -- Preprocessing --
-from sklearn.preprocessing import FunctionTransformer
-
 preprocessor = FunctionTransformer()
 
 # -- Label Propagation --
-import networkx as nx
-from sklearn.semi_supervised import LabelPropagation
-
 class GraphLabelFiller:
 
     def __init__(self, graph, resolver=None):
@@ -133,9 +137,6 @@ graph = nx.from_pandas_edgelist(
 )
 
 # -- Resolution --
-from sklearn.base import clone
-from sklearn.ensemble import HistGradientBoostingClassifier
-
 class EstimatorBasedResolver:
 
     def __init__(self, estimator):
@@ -178,8 +179,6 @@ classifier = HistGradientBoostingClassifier(
 )
 
 # -- Semi-Supervised Learning --
-from sklearn.base import BaseEstimator, ClassifierMixin
-
 class SemiSupervisedClassifier(BaseEstimator, ClassifierMixin):
 
     def __init__(self, classifier, label_filler):
@@ -201,8 +200,6 @@ class SemiSupervisedClassifier(BaseEstimator, ClassifierMixin):
 estimator = SemiSupervisedClassifier(classifier, label_filler)
 
 # -- Pipeline --
-from sklearn.pipeline import Pipeline
-
 pipeline = Pipeline([
     ("imputer", imputer),
     ("preprocessor", preprocessor),
@@ -210,9 +207,6 @@ pipeline = Pipeline([
 ])
 
 # -- Training and Evaluation --
-from sklearn.metrics import make_scorer
-from sklearn.model_selection import cross_val_score
-
 class LabeledStratifiedKFold:
     def __init__(self, n_splits, *, shuffle=False, random_state=None):
         if not shuffle and random_state is not None:
