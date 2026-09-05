@@ -3,14 +3,13 @@ import networkx as nx
 import numpy as np
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.model_selection import cross_val_score
-from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
 
 from data import load_train_data, load_social_graph
 from evaluation import LabeledStratifiedKFold, get_scorer
 from imputation import get_imputer
+from pipeline import build_pipeline
 from pseudo_labeling import get_labeler
-from semi_supervised import SemiSupervisedClassifier
 
 # -- Constants --
 
@@ -67,14 +66,8 @@ classifier = HistGradientBoostingClassifier(
     n_iter_no_change=10,
 )
 
-estimator = SemiSupervisedClassifier(classifier, labeler)
-
 # -- Pipeline --
-pipeline = Pipeline([
-    ("imputer", imputer),
-    ("preprocessor", preprocessor),
-    ("estimator", estimator),
-])
+pipeline = build_pipeline(imputer, preprocessor, labeler, classifier)
 
 # -- Training and Evaluation --
 cv = LabeledStratifiedKFold(N_SPLITS, shuffle=True, random_state=RANDOM_STATE)

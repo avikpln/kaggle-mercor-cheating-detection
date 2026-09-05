@@ -1,4 +1,5 @@
 from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.pipeline import Pipeline
 
 
 class SemiSupervisedClassifier(BaseEstimator, ClassifierMixin):
@@ -18,3 +19,15 @@ class SemiSupervisedClassifier(BaseEstimator, ClassifierMixin):
 
     def predict_proba(self, X):
         return self.classifier.predict_proba(X)
+
+
+def build_pipeline(imputer, preprocessor, labeler, classifier):
+    estimator = SemiSupervisedClassifier(classifier, labeler)
+
+    pipeline = Pipeline([
+        ("imputer", imputer),
+        ("preprocessor", preprocessor),
+        ("estimator", estimator),
+    ])
+
+    return pipeline
