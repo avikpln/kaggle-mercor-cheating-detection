@@ -73,8 +73,9 @@ kaggle-mercor-cheating-detection/
 │   ├── __init__.py
 │   ├── data.py                        # Data loading
 │   ├── imputation.py                  # Feature imputation
+│   ├── model.py                       # Main ML pipeline
 │   ├── pseudo_labeling.py             # Pseudo-labeling
-│   └── model.py                       # Main ML pipeline
+│   └── semi_supervised.py             # Semi-supervised learning
 ├── .gitignore
 ├── LICENSE
 └── README.md

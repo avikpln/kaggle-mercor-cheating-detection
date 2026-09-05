@@ -1,7 +1,6 @@
 # -- Import Libraries --
 import networkx as nx
 import numpy as np
-from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.metrics import make_scorer
 from sklearn.model_selection import cross_val_score
@@ -11,6 +10,7 @@ from sklearn.preprocessing import FunctionTransformer
 from data import load_train_data, load_social_graph
 from imputation import get_imputer
 from pseudo_labeling import get_labeler
+from semi_supervised import SemiSupervisedClassifier
 
 # -- Constants --
 
@@ -66,25 +66,6 @@ classifier = HistGradientBoostingClassifier(
     validation_fraction=0.1,
     n_iter_no_change=10,
 )
-
-# -- Semi-Supervised Learning --
-class SemiSupervisedClassifier(BaseEstimator, ClassifierMixin):
-
-    def __init__(self, classifier, labeler):
-        self.classifier = classifier
-        self.labeler = labeler
-
-    def fit(self, X, y):
-        X_filled, y_filled = self.labeler.fit_transform(X, y)
-        self.classifier.fit(X_filled, y_filled)
-        self.classes_ = self.classifier.classes_
-        return self
-
-    def predict(self, X):
-        return self.classifier.predict(X)
-
-    def predict_proba(self, X):
-        return self.classifier.predict_proba(X)
 
 estimator = SemiSupervisedClassifier(classifier, labeler)
 
