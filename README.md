@@ -68,6 +68,7 @@ kaggle-mercor-cheating-detection/
 ├── notebooks/
 │   ├── cheating-detection-eval.ipynb  # Official evaluation metric
 │   ├── design.ipynb                   # Modeling design decisions
+│   ├── discussion.ipynb               # Modeling discussion and experiments
 │   └── eda.ipynb                      # Exploratory data analysis
 ├── src/
 │   ├── __init__.py
@@ -75,6 +76,7 @@ kaggle-mercor-cheating-detection/
 │   ├── evaluation.py                  # Evaluation
 │   ├── experimentation.py             # Experimentation
 │   ├── imputation.py                  # Feature imputation
+│   ├── label_propagation_diag.py      # Label propagation diagnostics
 │   ├── pipeline.py                    # ML pipeline
 │   └── pseudo_labeling.py             # Pseudo-labeling
 ├── .gitignore
