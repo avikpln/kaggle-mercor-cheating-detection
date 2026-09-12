@@ -80,6 +80,7 @@ kaggle-mercor-cheating-detection/
 │   ├── holdout.py                     # Holdout split
 │   ├── imputation.py                  # Feature imputation
 │   ├── label_propagation_diag.py      # Label propagation diagnostics
+│   ├── label_propagation_testbed.py   # Label propagation testbed
 │   ├── pipeline.py                    # ML pipeline
 │   └── pseudo_labeling.py             # Pseudo-labeling
 ├── .gitignore
