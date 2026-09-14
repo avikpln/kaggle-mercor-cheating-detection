@@ -1,5 +1,4 @@
 # -- Imports --
-from collections import deque
 import time
 
 from joblib import Parallel, delayed
@@ -10,31 +9,24 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer, SimpleImputer
 from sklearn.metrics import balanced_accuracy_score
 from sklearn.semi_supervised import LabelPropagation, LabelSpreading
-
 from data import load_social_graph, load_train_data
 from evaluation import LabeledStratifiedKFold
+from graph_utils import directed_reachable
 from imputation import get_miceforest_imputer
 
 N_SPLITS = 5
 RANDOM_STATE = 42
 
-# -- Reachability Utilities --
-
-def _directed_reachable(graph, sources):
-    reached = set(sources) & set(graph.nodes)
-    queue = deque(reached)
-    while queue:
-        u = queue.popleft()
-        for v in graph.successors(u):
-            if v not in reached:
-                reached.add(v)
-                queue.append(v)
-    return reached
+# -- Data --
+def _load_data():
+    data_train = load_train_data().set_index("user_hash")
+    target_name = "is_cheating"
+    y = data_train[target_name]
+    X = data_train.drop(columns=[target_name])
+    return X, y
 
 # -- LabelPropagator --
-
 class LabelPropagator:
-
     def __init__(self, graph=None, feature_kernel=None, resolver=None,
                  max_iter=10000, propagator_cls=LabelPropagation,
                  **propagator_kwargs):
@@ -76,20 +68,16 @@ class LabelPropagator:
             propagated_labels = pd.Series(
                 propagator.transduction_, index=X.index
             )
-
         propagated_labels = propagated_labels.reindex(X.index)
         y_filled = y.fillna(propagated_labels)
-
         if self.resolver is None:
             X, y_filled = X[y_filled.notna()], y_filled[y_filled.notna()]
         else:
             X, y_filled = self.resolver.process(X, y_filled)
-
         return X, y_filled
 
     def _build_graph_kernel(self, X, y):
         graph = self.graph
-
         if graph.is_directed():
             components = list(nx.weakly_connected_components(graph))
         else:
@@ -109,7 +97,9 @@ class LabelPropagator:
             + sorted(set(graph.nodes) - users_in_qualifying)
         )
 
-        adjacency_matrix = nx.to_scipy_sparse_array(graph, nodelist=nodelist)
+        adjacency_matrix = nx.to_scipy_sparse_array(
+            graph, nodelist=nodelist
+        )
 
         unreached = set()
         if graph.is_directed():
@@ -117,41 +107,13 @@ class LabelPropagator:
             # stores edges as source -> target. Transpose to propagate
             # labels from referrers to referred users.
             adjacency_matrix = adjacency_matrix.T
-            reached = _directed_reachable(graph, y_labeled)
+            reached = directed_reachable(graph, y_labeled)
             unreached = set(nodelist) - reached
 
         graph_y = y.reindex(nodelist).fillna(-1).to_numpy()
-
         return adjacency_matrix, graph_y, nodelist, unreached
 
-# -- Dev-fold eligibility --
-
-def _undirected_eligible(graph, y):
-    labeled = set(y.dropna().index)
-    eligible = set()
-    for component in nx.connected_components(graph):
-        component_labeled = component & labeled
-        if len(component_labeled) < 2:
-            continue
-        anchor = min(component_labeled)
-        eligible |= component_labeled - {anchor}
-    return eligible
-
-
-def _directed_eligible(graph, y):
-    labeled = set(y.dropna().index)
-    eligible = set()
-    for component in nx.weakly_connected_components(graph):
-        component_labeled = component & labeled
-        if len(component_labeled) < 2:
-            continue
-        anchor = min(component_labeled)
-        reached = _directed_reachable(graph, {anchor})
-        eligible |= (reached & component_labeled) - {anchor}
-    return eligible
-
 # -- Testing --
-
 def _run_fold(fold_idx, X, y, build_propagator, dev_positions,
               imputer_fn=None):
     print(f"Starting fold {fold_idx + 1}/{N_SPLITS}...")
@@ -160,7 +122,9 @@ def _run_fold(fold_idx, X, y, build_propagator, dev_positions,
     y_masked.iloc[dev_positions] = np.nan
 
     if imputer_fn is not None:
-        train_positions = np.setdiff1d(np.arange(len(X)), dev_positions)
+        train_positions = np.setdiff1d(
+            np.arange(len(X)), dev_positions
+        )
         imputer = imputer_fn()
         imputer.fit(X.iloc[train_positions])
         X_fold = imputer.transform(X)
@@ -173,7 +137,6 @@ def _run_fold(fold_idx, X, y, build_propagator, dev_positions,
 
     dev_index = X.index[dev_positions]
     resolved_dev_index = dev_index.intersection(y_filled.index)
-
     y_true = y.loc[resolved_dev_index]
     y_pred = y_filled.loc[resolved_dev_index]
 
@@ -184,28 +147,28 @@ def _run_fold(fold_idx, X, y, build_propagator, dev_positions,
     return resolved_fraction, balanced_accuracy, y_true, y_pred
 
 
-def evaluate(X, y, build_propagator, note, imputer_fn=None,
-             eligible_index=None):
-    if eligible_index is None:
-        eligible_index = y.dropna().index
+def evaluate(X, y, build_propagator, note, imputer_fn=None):
+    labeled_index = y.dropna().index
 
     cv = LabeledStratifiedKFold(
         N_SPLITS, shuffle=True, random_state=RANDOM_STATE
     )
-    X_eligible = X.loc[eligible_index]
-    y_eligible = y.loc[eligible_index]
-    full_pos = {idx: pos for pos, idx in enumerate(X.index)}
+    X_labeled = X.loc[labeled_index]
+    y_labeled = y.loc[labeled_index]
 
+    full_pos = {idx: pos for pos, idx in enumerate(X.index)}
     folds = []
-    for _, dev_rel_positions in cv.split(X_eligible, y_eligible):
-        dev_index = X_eligible.index[dev_rel_positions]
+
+    for _, dev_rel_positions in cv.split(X_labeled, y_labeled):
+        dev_index = X_labeled.index[dev_rel_positions]
         dev_positions = np.array([full_pos[i] for i in dev_index])
         folds.append(dev_positions)
 
     start = time.perf_counter()
     results = Parallel(n_jobs=-1)(
-        delayed(_run_fold)(i, X, y, build_propagator, dev_positions,
-                            imputer_fn)
+        delayed(_run_fold)(
+            i, X, y, build_propagator, dev_positions, imputer_fn
+        )
         for i, dev_positions in enumerate(folds)
     )
     elapsed = time.perf_counter() - start
@@ -224,18 +187,9 @@ def evaluate(X, y, build_propagator, note, imputer_fn=None,
         f"{balanced_accuracy_score(overall_y_true, overall_y_pred):.4f}"
     )
 
-
-def load_data():
-    data_train = load_train_data().set_index("user_hash")
-    target_name = "is_cheating"
-    y = data_train[target_name]
-    X = data_train.drop(columns=[target_name])
-    return X, y
-
 # -- Single-source baselines --
-
 def test_baseline_propagation_undirected():
-    X, y = load_data()
+    X, y = _load_data()
     social_graph = load_social_graph()
     graph = nx.from_pandas_edgelist(
         social_graph, source="user_a", target="user_b",
@@ -244,12 +198,11 @@ def test_baseline_propagation_undirected():
         X, y,
         lambda: LabelPropagator(graph=graph),
         "LabelPropagation, topology only, undirected",
-        eligible_index=list(_undirected_eligible(graph, y)),
     )
 
 
 def test_baseline_propagation_directed():
-    X, y = load_data()
+    X, y = _load_data()
     social_graph = load_social_graph()
     graph = nx.from_pandas_edgelist(
         social_graph, source="user_a", target="user_b",
@@ -259,7 +212,6 @@ def test_baseline_propagation_directed():
         X, y,
         lambda: LabelPropagator(graph=graph),
         "LabelPropagation, topology only, directed",
-        eligible_index=list(_directed_eligible(graph, y)),
     )
 
 
@@ -272,7 +224,7 @@ def get_imputer():
 
 
 def test_baseline_propagation_knn():
-    X, y = load_data()
+    X, y = _load_data()
     evaluate(
         X, y,
         lambda: LabelPropagator(feature_kernel="knn"),
@@ -282,21 +234,22 @@ def test_baseline_propagation_knn():
 
 
 def test_baseline_spreading_undirected():
-    X, y = load_data()
+    X, y = _load_data()
     social_graph = load_social_graph()
     graph = nx.from_pandas_edgelist(
         social_graph, source="user_a", target="user_b",
     )
     evaluate(
         X, y,
-        lambda: LabelPropagator(graph=graph, propagator_cls=LabelSpreading),
+        lambda: LabelPropagator(
+            graph=graph, propagator_cls=LabelSpreading
+        ),
         "LabelSpreading, topology only, undirected",
-        eligible_index=list(_undirected_eligible(graph, y)),
     )
 
 
 def test_baseline_spreading_directed():
-    X, y = load_data()
+    X, y = _load_data()
     social_graph = load_social_graph()
     graph = nx.from_pandas_edgelist(
         social_graph, source="user_a", target="user_b",
@@ -304,14 +257,15 @@ def test_baseline_spreading_directed():
     )
     evaluate(
         X, y,
-        lambda: LabelPropagator(graph=graph, propagator_cls=LabelSpreading),
+        lambda: LabelPropagator(
+            graph=graph, propagator_cls=LabelSpreading
+        ),
         "LabelSpreading, topology only, directed",
-        eligible_index=list(_directed_eligible(graph, y)),
     )
 
 
 def test_baseline_spreading_knn():
-    X, y = load_data()
+    X, y = _load_data()
     evaluate(
         X, y,
         lambda: LabelPropagator(
@@ -339,37 +293,45 @@ def test_baseline():
     test_baseline_spreading()
 
 # -- Analysis Functions --
-
 def quantify_directed_unreachable():
     data_train = load_train_data()
     social_graph = load_social_graph()
-
     graph = nx.from_pandas_edgelist(
         social_graph, source="user_a", target="user_b",
         create_using=nx.DiGraph,
     )
     graph_users = set(graph.nodes)
-
     labeled = set(
-        data_train.loc[data_train["is_cheating"].notna(), "user_hash"]
+        data_train.loc[
+            data_train["is_cheating"].notna(), "user_hash"
+        ]
     )
     unlabeled = set(
-        data_train.loc[data_train["is_cheating"].isna(), "user_hash"]
+        data_train.loc[
+            data_train["is_cheating"].isna(), "user_hash"
+        ]
     )
-    reached = _directed_reachable(graph, labeled)
-
+    reached = directed_reachable(graph, labeled)
     outside_graph = unlabeled - graph_users
     in_graph_unreached = (unlabeled & graph_users) - reached
     reachable = unlabeled & reached
-
-    n = len(data_train)  # all train users, matching eda.ipynb's denominator
+    n = len(data_train)
     print(f"All train users: {n}")
-    print(f"Unlabeled, outside graph: {len(outside_graph)} ({len(outside_graph)/n:.2%})")
-    print(f"Unlabeled, in graph, no directed path from labeled: {len(in_graph_unreached)} ({len(in_graph_unreached)/n:.2%})")
-    print(f"Unlabeled, reachable via directed propagation: {len(reachable)} ({len(reachable)/n:.2%})")
+    print(
+        f"Unlabeled, outside graph: {len(outside_graph)} "
+        f"({len(outside_graph) / n:.2%})"
+    )
+    print(
+        f"Unlabeled, in graph, no directed path from labeled: "
+        f"{len(in_graph_unreached)} "
+        f"({len(in_graph_unreached) / n:.2%})"
+    )
+    print(
+        f"Unlabeled, reachable via directed propagation: "
+        f"{len(reachable)} ({len(reachable) / n:.2%})"
+    )
 
 # -- Main --
-
 if __name__ == "__main__":
-    # test_baseline()
+    test_baseline()
     quantify_directed_unreachable()
