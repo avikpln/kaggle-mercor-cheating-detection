@@ -78,6 +78,7 @@ kaggle-mercor-cheating-detection/
 │   ├── experimentation.py             # Experimentation
 │   ├── flagger.py                     # Flagging model
 │   ├── graph_utils.py                 # Graph utilities
+│   ├── gnn.py                         # GNN classification
 │   ├── gnn_testbed.py                 # GNN testbed
 │   ├── holdout.py                     # Holdout split
 │   ├── imputation.py                  # Feature imputation

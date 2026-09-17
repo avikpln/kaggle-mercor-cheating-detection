@@ -1,9 +1,10 @@
 from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import IterativeImputer
+from sklearn.impute import IterativeImputer, SimpleImputer
 
 
 def get_imputer(random_state=None):
-    imputer = IterativeImputer(random_state=random_state)
+    # imputer = IterativeImputer(random_state=random_state)
+    imputer = SimpleImputer()
     imputer.set_output(transform="pandas")
     return imputer
 
@@ -12,8 +13,6 @@ import pandas as pd
 from miceforest import ImputationKernel
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import HistGradientBoostingClassifier
-from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import IterativeImputer
 from sklearn.pipeline import make_pipeline
 
 class MiceForestImputer(BaseEstimator, TransformerMixin):

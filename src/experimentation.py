@@ -49,6 +49,7 @@ graph = nx.from_pandas_edgelist(
     social_graph,
     source="user_a",
     target="user_b",
+    create_using=nx.DiGraph,
 )
 
 labeler = get_labeler(graph, random_state=RANDOM_STATE)
@@ -77,5 +78,5 @@ scores = cross_val_score(
     target_train,
     cv=cv,
     scoring=get_scorer(),
-    n_jobs=-1,
+    # n_jobs=-1,
 )
