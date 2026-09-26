@@ -1,10 +1,18 @@
+# -- Imports -- 
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer, SimpleImputer
 
-
+# -- Factory --
 def get_imputer(random_state=None):
+    imputer = SimpleImputer(strategy="mean")
+    # imputer = SimpleImputer(strategy="median")
+    # imputer = SimpleImputer(strategy="most_frequent")
+    # imputer = SimpleImputer(strategy='constant', fill_value=0)
+
     # imputer = IterativeImputer(random_state=random_state)
-    imputer = SimpleImputer()
+
+    # imputer = get_miceforest_imputer(random_state=random_state)
+
     imputer.set_output(transform="pandas")
     return imputer
 
@@ -21,7 +29,10 @@ class MiceForestImputer(BaseEstimator, TransformerMixin):
         self.random_state = random_state
 
     def fit(self, X, y=None):
-        X = pd.DataFrame(X).reset_index(drop=True)
+        X = pd.DataFrame(X)
+        self.index_ = X.index  # save original index
+        X = X.reset_index(drop=True)
+
         self.columns_ = X.columns
         self.kernel_ = ImputationKernel(
             X,
@@ -32,13 +43,18 @@ class MiceForestImputer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
+        original_index = X.index  # save caller's index 
         X = pd.DataFrame(X, columns=self.columns_).reset_index(drop=True)
+
         imputed = self.kernel_.impute_new_data(
             X,
             datasets=[0],
             random_state=self.random_state,
         )
-        return imputed.complete_data(dataset=0)
+        result = imputed.complete_data(dataset=0)
+
+        result.index = original_index  # reattach
+        return result
 
     def get_feature_names_out(self, input_features=None):
         return self.columns_.to_numpy()
