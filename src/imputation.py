@@ -8,6 +8,7 @@ def get_imputer(random_state=None):
     # imputer = SimpleImputer(strategy="median")
     # imputer = SimpleImputer(strategy="most_frequent")
     # imputer = SimpleImputer(strategy='constant', fill_value=0)
+    # imputer = SimpleImputer(strategy='constant', fill_value=-1)
 
     # imputer = IterativeImputer(random_state=random_state)
 

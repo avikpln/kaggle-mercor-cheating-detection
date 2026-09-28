@@ -78,5 +78,6 @@ scores = cross_val_score(
     target_train,
     cv=cv,
     scoring=get_scorer(),
+    verbose=2,
     # n_jobs=-1,
 )
