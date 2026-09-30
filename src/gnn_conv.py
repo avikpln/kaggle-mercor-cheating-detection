@@ -18,43 +18,43 @@ INCLUDE_GHOSTS = False
 EPSILON = 1e-6
 
 # -- Model --
-# class ConvGNN(torch.nn.Module):
-#     def __init__(self, in_dim, hidden_dim, n_classes=2):
-#         super().__init__()
-#         self.bn0 = nn.BatchNorm1d(in_dim)
-#         self.conv1 = GCNConv(in_dim, hidden_dim)
-#         self.bn1 = nn.BatchNorm1d(hidden_dim)
-#         self.conv2 = GCNConv(hidden_dim, n_classes)
-
-#     def forward(self, x, edge_index):
-#         x = self.bn0(x)
-#         x = self.conv1(x, edge_index)
-#         x = F.relu(x)
-#         x = self.bn1(x)
-#         # x = F.dropout(x, p=0.2, training=self.training)
-#         x = self.conv2(x, edge_index)
-#         return x
-
 class ConvGNN(torch.nn.Module):
     def __init__(self, in_dim, hidden_dim, n_classes=2):
         super().__init__()
         self.bn0 = nn.BatchNorm1d(in_dim)
         self.conv1 = GCNConv(in_dim, hidden_dim)
         self.bn1 = nn.BatchNorm1d(hidden_dim)
-        self.conv2 = GCNConv(hidden_dim, hidden_dim)
-        self.bn2 = nn.BatchNorm1d(hidden_dim)
-        self.linear = nn.Linear(hidden_dim, n_classes)
+        self.conv2 = GCNConv(hidden_dim, n_classes)
 
     def forward(self, x, edge_index):
         x = self.bn0(x)
         x = self.conv1(x, edge_index)
         x = F.relu(x)
         x = self.bn1(x)
+        # x = F.dropout(x, p=0.2, training=self.training)
         x = self.conv2(x, edge_index)
-        x = F.relu(x)
-        x = self.bn2(x)
-        x = self.linear(x)
         return x
+
+# class ConvGNN(torch.nn.Module):
+#     def __init__(self, in_dim, hidden_dim, n_classes=2):
+#         super().__init__()
+#         self.bn0 = nn.BatchNorm1d(in_dim)
+#         self.conv1 = GCNConv(in_dim, hidden_dim)
+#         self.bn1 = nn.BatchNorm1d(hidden_dim)
+#         self.conv2 = GCNConv(hidden_dim, hidden_dim)
+#         self.bn2 = nn.BatchNorm1d(hidden_dim)
+#         self.linear = nn.Linear(hidden_dim, n_classes)
+
+#     def forward(self, x, edge_index):
+#         x = self.bn0(x)
+#         x = self.conv1(x, edge_index)
+#         x = F.relu(x)
+#         x = self.bn1(x)
+#         x = self.conv2(x, edge_index)
+#         x = F.relu(x)
+#         x = self.bn2(x)
+#         x = self.linear(x)
+#         return x
 
 # -- Classifier --
 class ConvGNNClassifier(BaseEstimator, ClassifierMixin):
@@ -94,7 +94,7 @@ class ConvGNNClassifier(BaseEstimator, ClassifierMixin):
                 np.array([
                     [index_me(u), index_me(v)]
                     for cc in qualifying_components
-                    for u in cc for v in cc[u]
+                    for u in cc for v in sorted(cc[u])  # for reproducibility
                 ]),
                 dtype=torch.long,
             ).T
@@ -103,7 +103,7 @@ class ConvGNNClassifier(BaseEstimator, ClassifierMixin):
                 np.array([
                     [self.user_to_index[u], self.user_to_index[v]]
                     for cc in qualifying_components
-                    for u in cc for v in cc[u]
+                    for u in cc for v in sorted(cc[u])  # for reproducibility
                     if u in self.user_to_index and v in self.user_to_index
                 ]),
                 dtype=torch.long,
@@ -124,7 +124,7 @@ class ConvGNNClassifier(BaseEstimator, ClassifierMixin):
         self.min_, self.max_ = X.min(), X.max()
         mean = X.mean()
         X = self._scale(X)
-        n_ghosts, n_features = self.size - len(X), X.shape[1]
+        n_ghosts = self.size - len(X)
         ghosts = np.tile(self._scale(mean).to_numpy(), (n_ghosts, 1))
         return np.vstack([X.to_numpy(), ghosts])
 

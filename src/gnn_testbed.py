@@ -23,6 +23,7 @@ def _load_data():
     graph = load_social_graph()
     graph_users = set(graph["user_a"]) | set(graph["user_b"])
     data_train = data_train.loc[data_train.index.intersection(graph_users)]
+    data_train = data_train.drop(columns=["high_conf_clean"])
     target_name = "is_cheating"
     y = data_train[target_name]
     X = data_train.drop(columns=[target_name])
@@ -51,7 +52,7 @@ def test_one_hop_gnn():
     X, y = _load_data()
     classifier = make_pipeline(
         get_imputer(random_state=RANDOM_STATE),
-        OneHopGNNClassifier(random_state=RANDOM_STATE   ),
+        OneHopGNNClassifier(random_state=RANDOM_STATE),
     )
     evaluate(
         X,

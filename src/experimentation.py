@@ -33,7 +33,7 @@ target_train = data_train[target_name]
 data_train = data_train.drop(columns=[target_name])
 
 # Feature selection.
-data_train = data_train.drop(columns=["feature_014", "high_conf_clean"])
+data_train = data_train.drop(columns=["high_conf_clean"])
 
 # Load social graph data from a CSV file.
 social_graph = load_social_graph()
