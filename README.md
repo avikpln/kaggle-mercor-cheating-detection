@@ -72,12 +72,12 @@ kaggle-mercor-cheating-detection/
 │   └── eda.ipynb                      # Exploratory data analysis
 ├── src/
 │   ├── __init__.py
+│   ├── baseline.py                    # Baseline model and results
 │   ├── cf_testbed.py                  # Cheating | Flagged testbed
 │   ├── classifier_testbed.py          # Classifier testbed
 │   ├── data.py                        # Data loading
 │   ├── dummy.py                       # Dummy baseline
 │   ├── evaluation.py                  # Evaluation
-│   ├── experimentation.py             # Experimentation
 │   ├── flagger.py                     # Flagging model
 │   ├── graph_preprocessing.py         # Graph preprocessing and caching
 │   ├── graph_utils.py                 # Graph utilities
@@ -89,7 +89,9 @@ kaggle-mercor-cheating-detection/
 │   ├── label_propagation_diag.py      # Label propagation diagnostics
 │   ├── label_propagation_testbed.py   # Label propagation testbed
 │   ├── pipeline.py                    # ML pipeline
-│   └── pseudo_labeling.py             # Pseudo-labeling
+│   ├── pseudo_labeling.py             # Pseudo-labeling
+│   ├── router.py                      # Routed classifier
+│   └── router_testbed.py              # Routed classification testbed
 ├── .gitignore
 ├── LICENSE
 └── README.md

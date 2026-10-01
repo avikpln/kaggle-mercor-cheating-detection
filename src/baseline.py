@@ -57,14 +57,7 @@ labeler = get_labeler(graph, random_state=RANDOM_STATE)
 # -- Classification --
 classifier = HistGradientBoostingClassifier(
     random_state=RANDOM_STATE,
-    max_iter=100,
-    learning_rate=0.1,
-    max_depth=None,
-    min_samples_leaf=20,
-    l2_regularization=0.0,
-    early_stopping=True,
-    validation_fraction=0.1,
-    n_iter_no_change=10,
+    max_iter=1000,
 )
 
 # -- Pipeline --
