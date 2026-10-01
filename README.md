@@ -36,6 +36,10 @@ bias, social graph analysis
 cost-aware threshold optimization
 - [ ] **Implementation** — build and validate models against the actual cost
 metric
+  - [x] End-to-end baseline pipeline (impute → propagate → classify)
+  - [ ] Hyperparameter tuning (classifier, resolver choice)
+  - [ ] Compare resolver strategies (drop vs. self-training)
+  - [ ] Final model selection and submission
 
 ## Data
 
@@ -59,11 +63,35 @@ For details on the data fields, format, and structure, see the
 ```
 kaggle-mercor-cheating-detection/
 ├── docs/
-│   ├── Data.pdf            # Official competition data reference
-│   └── Overview.pdf        # Official competition brief
+│   ├── Data.pdf                       # Official competition data reference
+│   └── Overview.pdf                   # Official competition brief
 ├── notebooks/
-│   ├── design.ipynb        # Modeling design decisions
-│   └── eda.ipynb           # Exploratory data analysis
+│   ├── cheating-detection-eval.ipynb  # Official evaluation metric
+│   ├── design.ipynb                   # Modeling design decisions
+│   ├── discussion.ipynb               # Modeling discussion and experiments
+│   └── eda.ipynb                      # Exploratory data analysis
+├── src/
+│   ├── __init__.py
+│   ├── baseline.py                    # Baseline model and results
+│   ├── cf_testbed.py                  # Cheating | Flagged testbed
+│   ├── classifier_testbed.py          # Classifier testbed
+│   ├── data.py                        # Data loading
+│   ├── dummy.py                       # Dummy baseline
+│   ├── evaluation.py                  # Evaluation
+│   ├── flagger.py                     # Flagging model
+│   ├── graph_preprocessing.py         # Graph preprocessing and caching
+│   ├── graph_utils.py                 # Graph utilities
+│   ├── gnn_conv.py                    # Convolutional GNN
+│   ├── gnn_one_hop.py                 # One-hop GNN model
+│   ├── gnn_testbed.py                 # GNN testbed
+│   ├── holdout.py                     # Holdout split
+│   ├── imputation.py                  # Feature imputation
+│   ├── label_propagation_diag.py      # Label propagation diagnostics
+│   ├── label_propagation_testbed.py   # Label propagation testbed
+│   ├── pipeline.py                    # ML pipeline
+│   ├── pseudo_labeling.py             # Pseudo-labeling
+│   ├── router.py                      # Routed classifier
+│   └── router_testbed.py              # Routed classification testbed
 ├── .gitignore
 ├── LICENSE
 └── README.md
