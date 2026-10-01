@@ -73,6 +73,7 @@ kaggle-mercor-cheating-detection/
 ├── src/
 │   ├── __init__.py
 │   ├── cf_testbed.py                  # Cheating | Flagged testbed
+│   ├── classifier_testbed.py          # Classifier testbed
 │   ├── data.py                        # Data loading
 │   ├── dummy.py                       # Dummy baseline
 │   ├── evaluation.py                  # Evaluation
