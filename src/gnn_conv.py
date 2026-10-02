@@ -7,7 +7,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
 
-from data import load_graph_components, load_social_graph
+from data import load_social_graph
+from graph_preprocessing import get_graph_components
 
 # -- Constants --
 
@@ -78,7 +79,7 @@ class ConvGNNClassifier(BaseEstimator, ClassifierMixin):
         return qualifying_components
 
     def _build_edge_index(self, X):
-        graph_components = load_graph_components()
+        graph_components = get_graph_components()
         qualifying_components = self._screen(graph_components, X)
 
         self.user_to_index = {user: i for i, user in enumerate(X.index)}
