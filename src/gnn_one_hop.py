@@ -62,6 +62,12 @@ class OneHopGNNClassifier(BaseEstimator, ClassifierMixin):
         users = set(X.index) | set(self.X_fit.index)
 
         for user in X.index:
+            user_features = (
+                self.X_fit.loc[user]
+                if user in self.X_fit.index
+                else X.loc[user]
+            )
+
             for predecessor in self.graph.predecessors(user):
                 edge = (predecessor, user)
                 if edge in context["edge_seen"]:
@@ -78,6 +84,10 @@ class OneHopGNNClassifier(BaseEstimator, ClassifierMixin):
                     context["real_in"].loc[user] += 1
                 else:
                     context["ghost_in"].loc[user] += 1
+
+                if predecessor in X.index:
+                    context["X_succ"].loc[predecessor] += user_features
+                    context["real_out"].loc[predecessor] += 1
 
             for successor in self.graph.successors(user):
                 edge = (user, successor)
@@ -96,6 +106,10 @@ class OneHopGNNClassifier(BaseEstimator, ClassifierMixin):
                 else:
                     context["ghost_out"].loc[user] += 1
 
+                if successor in X.index:
+                    context["X_pred"].loc[successor] += user_features
+                    context["real_in"].loc[successor] += 1
+
         return context
 
     def _initialize_neighbor_aggregates(self, X):
@@ -112,14 +126,23 @@ class OneHopGNNClassifier(BaseEstimator, ClassifierMixin):
 
         self._context = self._extract_neighbor_aggregates(X, self._context)
 
+        # Sanity check.
+        assert (
+            self._context["real_in"].sum() == self._context["real_out"].sum()
+        )
+
     def _scale(self, X, min_, max_):
         return (X - min_) / (max_ - min_ + EPSILON)
 
     def _preprocess(self, X):
         ghost_in = self._context["ghost_in"]
         ghost_out = self._context["ghost_out"]
-        X_pred = self._context["X_pred"]
-        X_succ = self._context["X_succ"]
+        X_pred = self._context["X_pred"].div(
+            self._context["real_in"].clip(lower=1), axis=0
+        )
+        X_succ = self._context["X_succ"].div(
+            self._context["real_out"].clip(lower=1), axis=0
+        )
 
         X = pd.concat([X, ghost_in, ghost_out], axis=1)
         self.min_, self.max_ = X.min(), X.max()
@@ -188,8 +211,8 @@ class OneHopGNNClassifier(BaseEstimator, ClassifierMixin):
 
         context = self._extract_neighbor_aggregates(X, context)
         return (
-            context["X_pred"],
-            context["X_succ"],
+            context["X_pred"].div(context["real_in"].clip(lower=1), axis=0),
+            context["X_succ"].div(context["real_out"].clip(lower=1), axis=0),
             context["ghost_in"],
             context["ghost_out"],
         )
