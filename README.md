@@ -91,7 +91,8 @@ kaggle-mercor-cheating-detection/
 │   ├── pipeline.py                    # ML pipeline
 │   ├── pseudo_labeling.py             # Pseudo-labeling
 │   ├── router.py                      # Routed classifier
-│   └── router_testbed.py              # Routed classification testbed
+│   ├── router_testbed.py              # Routed classification testbed
+│   └── sanity.py                      # Sanity checks
 ├── .gitignore
 ├── LICENSE
 └── README.md
