@@ -8,7 +8,7 @@ from sklearn.preprocessing import FunctionTransformer
 from data import load_train_data, load_social_graph
 from evaluation import LabeledStratifiedKFold, get_scorer
 from imputation import get_imputer
-from pipeline import build_pipeline
+from pipeline_semi_supervised import get_ss_pipeline
 from pseudo_labeling import get_labeler
 
 # -- Constants --
@@ -61,7 +61,7 @@ classifier = HistGradientBoostingClassifier(
 )
 
 # -- Pipeline --
-pipeline = build_pipeline(imputer, preprocessor, labeler, classifier)
+pipeline = get_ss_pipeline(imputer, preprocessor, labeler, classifier)
 
 # -- Training and Evaluation --
 cv = LabeledStratifiedKFold(N_SPLITS, shuffle=True, random_state=RANDOM_STATE)

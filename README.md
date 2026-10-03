@@ -30,16 +30,15 @@ evaluation cost metric.
 
 ## Roadmap
 
-- [x] **EDA** — data structure, feature relationships, missingness, sampling
+- [x] **EDA.** Data structure, feature relationships, missingness, sampling
 bias, social graph analysis
-- [x] **Design** — modeling approach, imputation strategy, graph usage,
+- [x] **Design.** Modeling approach, imputation strategy, graph usage,
 cost-aware threshold optimization
-- [ ] **Implementation** — build and validate models against the actual cost
+- [ ] **Implementation.** Build and validate models against the actual cost
 metric
-  - [x] End-to-end baseline pipeline (impute → propagate → classify)
-  - [ ] Hyperparameter tuning (classifier, resolver choice)
-  - [ ] Compare resolver strategies (drop vs. self-training)
-  - [ ] Final model selection and submission
+  - [x] End-to-end baseline pipeline
+  - [ ] Enhance results
+- [ ] **Report.** Test the final model on the holdout set.
 
 ## Data
 
@@ -54,7 +53,7 @@ For details on the data fields, format, and structure, see the
 
 ## Submission (v0 Baseline)
 
-- **Score:** `-1,863,965.00000`
+- **Score:** `-1,863,965.00`
 - **1st place:** `-1,463,180.00`
 - **Score after rework:** TBD
 
@@ -80,7 +79,6 @@ kaggle-mercor-cheating-detection/
 │   ├── evaluation.py                  # Evaluation
 │   ├── flagger.py                     # Flagging model
 │   ├── graph_preprocessing.py         # Graph preprocessing and caching
-│   ├── graph_utils.py                 # Graph utilities
 │   ├── gnn_conv.py                    # Convolutional GNN
 │   ├── gnn_one_hop.py                 # One-hop GNN model
 │   ├── gnn_testbed.py                 # GNN testbed
@@ -88,10 +86,12 @@ kaggle-mercor-cheating-detection/
 │   ├── imputation.py                  # Feature imputation
 │   ├── label_propagation_diag.py      # Label propagation diagnostics
 │   ├── label_propagation_testbed.py   # Label propagation testbed
-│   ├── pipeline.py                    # ML pipeline
+│   ├── pipeline_semi_supervised.py    # Semi-supervised pipeline
 │   ├── pseudo_labeling.py             # Pseudo-labeling
 │   ├── router.py                      # Routed classifier
-│   └── router_testbed.py              # Routed classification testbed
+│   ├── router_testbed.py              # Routed classification testbed
+│   ├── sanity.py                      # Sanity checks
+│   └── TODO.md                        # Tasks to perform
 ├── .gitignore
 ├── LICENSE
 └── README.md

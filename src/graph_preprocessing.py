@@ -39,10 +39,3 @@ def get_graph_components():
         pickle.dump(components, f)
 
     return components
-
-# -- Main --
-
-if __name__ == "__main__":
-    components = build_graph_components()
-    with open(GRAPH_COMPONENTS_PATH, "wb") as f:
-        pickle.dump(components, f)

@@ -1,7 +1,8 @@
+# -- Imports --
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.pipeline import Pipeline
 
-
+# -- Semi-Supervised Classifier --
 class SemiSupervisedClassifier(BaseEstimator, ClassifierMixin):
 
     def __init__(self, classifier, labeler):
@@ -20,8 +21,8 @@ class SemiSupervisedClassifier(BaseEstimator, ClassifierMixin):
     def predict_proba(self, X):
         return self.classifier.predict_proba(X)
 
-
-def build_pipeline(imputer, preprocessor, labeler, classifier):
+# -- Pipeline --
+def get_ss_pipeline(imputer, preprocessor, labeler, classifier):
     estimator = SemiSupervisedClassifier(classifier, labeler)
 
     pipeline = Pipeline([

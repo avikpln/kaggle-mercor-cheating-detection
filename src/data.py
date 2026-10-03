@@ -22,8 +22,3 @@ def load_test_data():
 
 def load_social_graph():
     return pd.read_csv(SOCIAL_GRAPH_PATH)
-
-
-def load_graph_components():
-    with open(GRAPH_COMPONENTS_PATH, "rb") as f:
-        return pickle.load(f)
