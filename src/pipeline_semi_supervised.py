@@ -22,7 +22,7 @@ class SemiSupervisedClassifier(BaseEstimator, ClassifierMixin):
         return self.classifier.predict_proba(X)
 
 # -- Pipeline --
-def build_pipeline(imputer, preprocessor, labeler, classifier):
+def get_ss_pipeline(imputer, preprocessor, labeler, classifier):
     estimator = SemiSupervisedClassifier(classifier, labeler)
 
     pipeline = Pipeline([

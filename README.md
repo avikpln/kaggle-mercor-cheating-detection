@@ -87,7 +87,7 @@ kaggle-mercor-cheating-detection/
 │   ├── imputation.py                  # Feature imputation
 │   ├── label_propagation_diag.py      # Label propagation diagnostics
 │   ├── label_propagation_testbed.py   # Label propagation testbed
-│   ├── pipeline.py                    # ML pipeline
+│   ├── pipeline_semi_supervised.py    # Semi-supervised pipeline
 │   ├── pseudo_labeling.py             # Pseudo-labeling
 │   ├── router.py                      # Routed classifier
 │   ├── router_testbed.py              # Routed classification testbed
