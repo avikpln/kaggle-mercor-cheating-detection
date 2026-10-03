@@ -54,7 +54,7 @@ For details on the data fields, format, and structure, see the
 
 ## Submission (v0 Baseline)
 
-- **Score:** `-1,863,965.00000`
+- **Score:** `-1,863,965.00`
 - **1st place:** `-1,463,180.00`
 - **Score after rework:** TBD
 
