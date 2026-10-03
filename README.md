@@ -30,16 +30,15 @@ evaluation cost metric.
 
 ## Roadmap
 
-- [x] **EDA** — data structure, feature relationships, missingness, sampling
+- [x] **EDA.** Data structure, feature relationships, missingness, sampling
 bias, social graph analysis
-- [x] **Design** — modeling approach, imputation strategy, graph usage,
+- [x] **Design.** Modeling approach, imputation strategy, graph usage,
 cost-aware threshold optimization
-- [ ] **Implementation** — build and validate models against the actual cost
+- [ ] **Implementation.** Build and validate models against the actual cost
 metric
-  - [x] End-to-end baseline pipeline (impute → propagate → classify)
-  - [ ] Hyperparameter tuning (classifier, resolver choice)
-  - [ ] Compare resolver strategies (drop vs. self-training)
-  - [ ] Final model selection and submission
+  - [x] End-to-end baseline pipeline
+  - [ ] Enhance results
+- [ ] **Report.** Test the final model on the holdout set.
 
 ## Data
 
