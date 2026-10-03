@@ -1,4 +1,5 @@
 # -- Imports --
+from collections import deque
 import time
 
 from joblib import Parallel, delayed
@@ -11,7 +12,6 @@ from sklearn.metrics import balanced_accuracy_score
 from sklearn.semi_supervised import LabelPropagation, LabelSpreading
 from data import load_social_graph, load_train_data
 from evaluation import LabeledStratifiedKFold
-from graph_utils import directed_reachable
 from imputation import get_miceforest_imputer
 
 N_SPLITS = 5
@@ -24,6 +24,18 @@ def _load_data():
     y = data_train[target_name]
     X = data_train.drop(columns=[target_name])
     return X, y
+
+# -- Graph Utilities --
+def _directed_reachable(graph, sources):
+    reached = set(sources) & set(graph.nodes)
+    queue = deque(reached)
+    while queue:
+        u = queue.popleft()
+        for v in graph.successors(u):
+            if v not in reached:
+                reached.add(v)
+                queue.append(v)
+    return reached
 
 # -- LabelPropagator --
 class LabelPropagator:
@@ -311,7 +323,7 @@ def quantify_directed_unreachable():
             data_train["is_cheating"].isna(), "user_hash"
         ]
     )
-    reached = directed_reachable(graph, labeled)
+    reached = _directed_reachable(graph, labeled)
     outside_graph = unlabeled - graph_users
     in_graph_unreached = (unlabeled & graph_users) - reached
     reachable = unlabeled & reached

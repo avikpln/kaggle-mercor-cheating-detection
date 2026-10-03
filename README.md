@@ -79,7 +79,6 @@ kaggle-mercor-cheating-detection/
 │   ├── evaluation.py                  # Evaluation
 │   ├── flagger.py                     # Flagging model
 │   ├── graph_preprocessing.py         # Graph preprocessing and caching
-│   ├── graph_utils.py                 # Graph utilities
 │   ├── gnn_conv.py                    # Convolutional GNN
 │   ├── gnn_one_hop.py                 # One-hop GNN model
 │   ├── gnn_testbed.py                 # GNN testbed
